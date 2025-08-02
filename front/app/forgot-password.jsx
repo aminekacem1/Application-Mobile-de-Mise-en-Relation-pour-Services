@@ -8,18 +8,19 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ImageBackground,
-  Pressable,
 } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
+// --- NOUVELLE PALETTE DE COULEURS (IDENTIQUE AUX AUTRES PAGES) ---
 const COLORS = {
-  primary: '#4A0D66',
-  secondary: '#E87A5D',
-  lightText: '#FFFFFF',
-  darkText: '#000000',
+  primary: '#005A9C',        // Bleu principal
+  background: '#F8F8F8',     // Arrière-plan blanc cassé
+  inputBackground: '#EBF2FA',// Arrière-plan bleu clair pour les champs
+  lightText: '#FFFFFF',       // Texte blanc
+  darkText: '#333333',        // Texte principal sombre
+  inactiveText: '#A9A9A9',    // Gris pour placeholders
 };
 
 export default function ForgotPassword() {
@@ -33,7 +34,7 @@ export default function ForgotPassword() {
     }
 
     try {
-      await axios.post('http://192.168.1.2:5000/api/auth/forgot-password', { email });
+      await axios.post('http://192.168.1.3:5000/api/auth/forgot-password', { email });
       Alert.alert(
         'Succès',
         'Un email pour réinitialiser votre mot de passe a été envoyé.',
@@ -49,21 +50,20 @@ export default function ForgotPassword() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <ImageBackground
-        source={require('@/assets/background-shapes.png')}
-        resizeMode="cover"
-        style={styles.imageBackground}
-      >
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={28} color={COLORS.lightText} />
+          <Feather name="arrow-left" size={28} color={COLORS.primary} />
         </TouchableOpacity>
 
         <View style={styles.innerContainer}>
           <Text style={styles.title}>Réinitialiser le mot de passe</Text>
+          <Text style={styles.subtitle}>
+            Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+          </Text>
 
+          {/* --- CHAMP DE SAISIE MIS À JOUR --- */}
           <View style={styles.inputContainer}>
-            <Feather name="mail" size={24} color={COLORS.lightText} style={styles.icon} />
-            <View>
+            <Feather name="mail" size={24} color={COLORS.primary} style={styles.icon} />
+            <View style={styles.inputWrapper}>
               <Text style={styles.inputLabel}>Adresse Email</Text>
               <TextInput
                 value={email}
@@ -72,64 +72,92 @@ export default function ForgotPassword() {
                 autoCapitalize="none"
                 style={styles.input}
                 placeholder="nom@exemple.com"
-                placeholderTextColor="#EEDFF2"
+                placeholderTextColor={COLORS.inactiveText}
               />
             </View>
           </View>
 
+          {/* --- BOUTON MIS À JOUR --- */}
           <TouchableOpacity style={styles.resetButton} onPress={handleResetPassword}>
             <Text style={styles.resetButtonText}>Envoyer le lien</Text>
           </TouchableOpacity>
         </View>
-      </ImageBackground>
     </KeyboardAvoidingView>
   );
 }
 
+// --- STYLES MIS À JOUR ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.primary },
-  imageBackground: { flex: 1, width: '100%' },
-  backButton: { position: 'absolute', top: 60, left: 20, zIndex: 10 },
+  container: { 
+    flex: 1, 
+    backgroundColor: COLORS.background 
+  },
+  backButton: { 
+    position: 'absolute', 
+    top: 60, 
+    left: 20, 
+    zIndex: 10 
+  },
   innerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: COLORS.lightText,
+    color: COLORS.darkText,
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: COLORS.inactiveText,
+    textAlign: 'center',
     marginBottom: 40,
+    width: '90%',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '90%',
-    backgroundColor: COLORS.secondary,
-    borderRadius: 15,
+    width: '95%',
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 25, // Coins très arrondis
     paddingHorizontal: 15,
     paddingVertical: 10,
     marginBottom: 30,
   },
-  icon: { marginRight: 10 },
-  inputLabel: { color: COLORS.lightText, fontSize: 14 },
-  input: { color: COLORS.lightText, fontSize: 16, width: 220 },
+  icon: { 
+    marginRight: 15 
+  },
+  inputWrapper: {
+    flex: 1,
+  },
+  inputLabel: { 
+    color: COLORS.darkText, 
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  input: { 
+    color: COLORS.darkText, 
+    fontSize: 16,
+    padding: 0,
+  },
   resetButton: {
-    width: '90%',
-    backgroundColor: COLORS.secondary,
+    width: '95%',
+    backgroundColor: COLORS.primary,
     padding: 15,
-    borderRadius: 30,
+    borderRadius: 50, // Style "pilule"
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   resetButtonText: {
-    color: COLORS.darkText,
+    color: COLORS.lightText,
     fontSize: 18,
     fontWeight: 'bold',
   },

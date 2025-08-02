@@ -1,109 +1,130 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native'; // Importez Animated
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 
-// Définition des couleurs pour une réutilisation facile
+// La palette de couleurs
 const COLORS = {
-  primary: '#4A0D66',
-  secondary: '#F88F4E',
+  background: '#F0F2F5', 
+  text: '#0D254E',
+  buttonPrimary: '#005A9C',
+  buttonText: '#F0F2F5',
 };
 
 export default function Home() {
   const router = useRouter();
 
-  // On utilise useRef pour garder les valeurs d'animation sans re-déclencher de rendu
-  const scaleAnim = useRef(new Animated.Value(0.5)).current; // Valeur initiale pour la taille (commence à 50%)
-  const opacityAnim = useRef(new Animated.Value(0)).current;   // Valeur initiale pour l'opacité (commence invisible)
+  // Les animations restent les mêmes
+  const logoScale = useRef(new Animated.Value(0.3)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const button1Scale = useRef(new Animated.Value(0.5)).current;
+  const button1Opacity = useRef(new Animated.Value(0)).current;
+  const button2Scale = useRef(new Animated.Value(0.5)).current;
+  const button2Opacity = useRef(new Animated.Value(0)).current;
 
-  // useEffect se lance une seule fois au chargement du composant
   useEffect(() => {
-    // Animated.timing permet de créer une animation basée sur le temps
-    Animated.parallel([
-      // Animation pour la taille
-      Animated.timing(scaleAnim, {
-        toValue: 1, // La valeur finale de l'échelle (100%)
-        duration: 1000, // Durée de l'animation en millisecondes
-        useNativeDriver: true, // Améliore les performances
-      }),
-      // Animation pour l'opacité
-      Animated.timing(opacityAnim, {
-        toValue: 1, // La valeur finale de l'opacité (complètement visible)
-        duration: 1200, // Un peu plus long pour un effet plus doux
+    Animated.sequence([
+      Animated.parallel([
+        Animated.spring(logoScale, {
+          toValue: 1,
+          friction: 5,
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoOpacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.timing(taglineOpacity, {
+        toValue: 1,
+        duration: 400,
+        delay: 100,
         useNativeDriver: true,
-      })
-    ]).start(); // Démarre les animations en parallèle
-  }, [scaleAnim, opacityAnim]);
+      }),
+      Animated.stagger(150, [
+        Animated.parallel([
+          Animated.spring(button1Scale, { toValue: 1, friction: 6, useNativeDriver: true }),
+          Animated.timing(button1Opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.spring(button2Scale, { toValue: 1, friction: 6, useNativeDriver: true }),
+          Animated.timing(button2Opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        ]),
+      ])
+    ]).start();
+  }, []);
 
   return (
+    // Ce conteneur centre tout son contenu
     <View style={styles.container}>
-      {/* 
-        On utilise Animated.Image au lieu de Image.
-        Le style de transformation (transform) applique l'animation de taille.
-        Le style d'opacité (opacity) applique l'animation de fondu.
-      */}
       <Animated.Image 
         source={require('../assets/logo.png')}
         style={[
           styles.logo,
           { 
-            transform: [{ scale: scaleAnim }],
-            opacity: opacityAnim 
+            opacity: logoOpacity,
+            transform: [{ scale: logoScale }],
           }
         ]} 
       />
 
-      <Text style={styles.tagline}>Connect with Trusted Technicians</Text>
+      <Animated.Text style={[styles.tagline, { opacity: taglineOpacity }]}>
+        Connect with Trusted Technicians
+      </Animated.Text>
       
       <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={() => router.push('/register')}
-        >
-          <Text style={styles.buttonText}>S'inscrire</Text>
-        </TouchableOpacity>
+        <Animated.View style={{ opacity: button1Opacity, transform: [{ scale: button1Scale }] }}>
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={() => router.push('/register')}
+          >
+            <Text style={styles.buttonText}>S'inscrire</Text>
+          </TouchableOpacity>
+        </Animated.View>
 
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={() => router.push('/login')}
-        >
-          <Text style={styles.buttonText}>Se connecter</Text>
-        </TouchableOpacity>
+        <Animated.View style={{ opacity: button2Opacity, transform: [{ scale: button2Scale }] }}>
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={() => router.push('/login')}
+          >
+            <Text style={styles.buttonText}>Se connecter</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     </View>
   );
 }
 
-// StyleSheet mis à jour
+// StyleSheet mis à jour pour un centrage parfait
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    padding: 20,
+    flex: 1, // Prend toute la hauteur de l'écran
+    justifyContent: 'center', // **C'est la clé : aligne les enfants verticalement au centre**
+    alignItems: 'center', // Aligne les enfants horizontalement au centre
+    backgroundColor: COLORS.background,
+    paddingHorizontal: 20, // On garde un padding horizontal pour les bords
   },
   logo: {
-    // TAILLE AUGMENTÉE
-    width: 250,
-    height: 250,
+    width: 300,
+    height: 300,
     resizeMode: 'contain',
-    marginBottom: 20,
+    marginBottom: 15, // Espace ajusté
   },
   tagline: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.secondary,
+    color: COLORS.text,
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 35, // Espace ajusté
   },
   buttonContainer: {
-    width: '80%',
+    width: '85%',
   },
   button: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.buttonPrimary,
     paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 30,
     alignItems: 'center',
     marginBottom: 15,
     shadowColor: "#000",
@@ -111,12 +132,12 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 4,
   },
   buttonText: {
-    color: COLORS.primary,
+    color: COLORS.buttonText,
     fontSize: 18,
     fontWeight: 'bold',
   },

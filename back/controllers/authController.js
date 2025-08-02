@@ -5,7 +5,7 @@ const User = require('../models/User');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 exports.register = async (req, res) => {
-  const { name, phone, email, password, role } = req.body;
+  const { name, phone, email, password, role, profession } = req.body; // add profession here
 
   try {
     const existingUser = await User.findOne({ email });
@@ -15,6 +15,11 @@ exports.register = async (req, res) => {
 
     if (!role || !['client', 'technicien'].includes(role)) {
       return res.status(400).json({ message: 'Rôle invalide' });
+    }
+
+    // Add profession validation if role is technicien
+    if (role === 'technicien' && (!profession || profession.trim() === '')) {
+      return res.status(400).json({ message: 'La profession est obligatoire pour un technicien.' });
     }
 
     if (!password || password.length < 6) {
@@ -29,6 +34,7 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      profession: role === 'technicien' ? profession : undefined, // save profession only if technician
     });
 
     await newUser.save();
@@ -39,6 +45,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur lors de l\'inscription' });
   }
 };
+
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
