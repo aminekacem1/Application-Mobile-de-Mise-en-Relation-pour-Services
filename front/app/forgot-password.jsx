@@ -34,7 +34,7 @@ export default function ForgotPassword() {
     }
 
     try {
-      await axios.post('http://192.168.1.3:5000/api/auth/forgot-password', { email });
+      await axios.post('http://192.168.1.8:5000/api/auth/forgot-password', { email });
       Alert.alert(
         'Succès',
         'Un email pour réinitialiser votre mot de passe a été envoyé.',

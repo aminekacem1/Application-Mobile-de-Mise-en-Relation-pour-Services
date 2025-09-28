@@ -1,3 +1,4 @@
+// back/routes/technicianRoutes.js (Example)
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -9,13 +10,12 @@ router.get('/', async (req, res) => {
     const technicians = await User.find({
       role: 'technicien',
       name: { $regex: search, $options: 'i' },
-    }).select('name phone email role profession');  // Add profession here
+    }).select('name phone email role profession description'); // <-- ADD 'description' here
 
     res.json(technicians);
   } catch (err) {
     res.status(500).json({ message: 'Server error fetching technicians' });
   }
 });
-
 
 module.exports = router;

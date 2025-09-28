@@ -1,3 +1,4 @@
+// front/app/login.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -10,35 +11,34 @@ import {
   Platform,
   Pressable,
   Animated,
-  ActivityIndicator // Import ActivityIndicator for loading
+  ActivityIndicator,
+  ImageBackground,
+  ScrollView
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 
-// --- PALETTE DE COULEURS (inchangée) ---
 const COLORS = {
   primary: '#005A9C',
   background: '#F8F8F8',
-  inputBackground: '#EBF2FA',
+  inputBackground: '#DDE8F5',
   lightText: '#FFFFFF',
   darkText: '#333333',
   inactiveText: '#A9A9A9',
 };
 
-// --- COMPOSANT D'ANIMATION D'ENTRÉE (Amélioré) ---
 const AnimatedEntry = ({ children, index }) => {
-  // Animation de fondu et de glissement pour chaque élément
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(50)).current; // Augmentation de la distance de glissement
+  const translateY = useRef(new Animated.Value(50)).current;
 
   useEffect(() => {
     Animated.stagger(150, [
       Animated.timing(opacity, {
         toValue: 1,
         duration: 700,
-        delay: index * 100, // Délai pour l'effet de décalage
+        delay: index * 100,
         useNativeDriver: true,
       }),
       Animated.timing(translateY, {
@@ -62,17 +62,15 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
-  // --- Animation de focus pour les champs de saisie ---
+  const [loginError, setLoginError] = useState('');
+
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const emailAnim = useRef(new Animated.Value(0)).current;
   const passwordAnim = useRef(new Animated.Value(0)).current;
 
-  // --- Animation de pression pour le bouton ---
   const buttonScale = useRef(new Animated.Value(1)).current;
 
-  // Gère les animations de focus
   useEffect(() => {
     Animated.timing(emailAnim, { toValue: isEmailFocused ? 1 : 0, duration: 300, useNativeDriver: false }).start();
   }, [isEmailFocused]);
@@ -84,86 +82,137 @@ export default function Login() {
   const handleLogin = async () => {
     if (isLoading) return;
     if (!email || !password) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      setLoginError('Veuillez remplir tous les champs');
       return;
     }
+
     setIsLoading(true);
+    setLoginError('');
     try {
-      const res = await axios.post('http://192.168.1.3:5000/api/auth/login', { email, password });
+      const res = await axios.post('http://192.168.1.8:5000/api/auth/login', { email, password });
       const { token, user } = res.data;
-      await AsyncStorage.setItem('token', token);
-      if (user.role === 'client') router.push('/userPage');
-      else if (user.role === 'technicien') router.push('/technicianPage');
+
+      await AsyncStorage.setItem('userToken', token);
+      await AsyncStorage.setItem('userRole', user.role);
+
+      Alert.alert('Succès', 'Connexion réussie!');
+
+      if (user.role === 'client') {
+        router.replace('/userPage');
+      } else if (user.role === 'technicien') {
+        router.replace('/(tabs)/technicianPage');
+      }
     } catch (error) {
-      Alert.alert('Erreur', error.response?.data?.message || 'Erreur de connexion');
+      setLoginError('Adresse e-mail ou mot de passe incorrect');
+      console.log('Login error (frontend)', error.message); // Keep for debugging
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fonctions pour animer le bouton
   const onPressIn = () => Animated.spring(buttonScale, { toValue: 0.95, useNativeDriver: true }).start();
   const onPressOut = () => Animated.spring(buttonScale, { toValue: 1, useNativeDriver: true }).start();
 
-  // Styles animés pour les champs de saisie
-  const emailContainerStyle = { ...styles.inputContainer, borderColor: emailAnim.interpolate({ inputRange: [0, 1], outputRange: [COLORS.inputBackground, COLORS.primary] }), transform: [{ scale: emailAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.03] }) }] };
-  const passwordContainerStyle = { ...styles.inputContainer, borderColor: passwordAnim.interpolate({ inputRange: [0, 1], outputRange: [COLORS.inputBackground, COLORS.primary] }), transform: [{ scale: passwordAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.03] }) }] };
+  const emailContainerStyle = { 
+    ...styles.inputContainer, 
+    borderColor: emailAnim.interpolate({ inputRange: [0, 1], outputRange: [COLORS.inputBackground, COLORS.primary] }), 
+    transform: [{ scale: emailAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.03] }) }] 
+  };
+
+  const passwordContainerStyle = { 
+    ...styles.inputContainer, 
+    borderColor: passwordAnim.interpolate({ inputRange: [0, 1], outputRange: [COLORS.inputBackground, COLORS.primary] }), 
+    transform: [{ scale: passwordAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.03] }) }] 
+  };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}><Feather name="arrow-left" size={28} color={COLORS.primary} /></TouchableOpacity>
-      <View style={styles.innerContainer}>
-        
-        <AnimatedEntry index={0}>
-          <View style={styles.headerContainer}>
-            <TouchableOpacity><Text style={[styles.headerText, styles.activeHeaderText]}>Se connecter</Text></TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/register')}><Text style={styles.headerText}>S'inscrire</Text></TouchableOpacity>
+    <ImageBackground
+      source={require('app/assets/background-shapes.png')}
+      style={styles.backgroundContainer}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.innerContainer}>
+            
+            <AnimatedEntry index={0}>
+              <View style={styles.headerContainer}>
+                <TouchableOpacity><Text style={[styles.headerText, styles.activeHeaderText]}>Se connecter</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/register')}><Text style={styles.headerText}>S'inscrire</Text></TouchableOpacity>
+              </View>
+            </AnimatedEntry>
+
+            <AnimatedEntry index={1}>
+              <Animated.View style={emailContainerStyle}>
+                <Feather name="user" size={24} color={COLORS.primary} style={styles.icon} />
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Email</Text>
+                  <TextInput
+                    value={email}
+                    onChangeText={setEmail}
+                    style={styles.input}
+                    placeholder="nom@exemple.com"
+                    placeholderTextColor={COLORS.inactiveText}
+                    onFocus={() => setIsEmailFocused(true)}
+                    onBlur={() => setIsEmailFocused(false)}
+                  />
+                </View>
+              </Animated.View>
+            </AnimatedEntry>
+            
+            <AnimatedEntry index={2}>
+              <Animated.View style={passwordContainerStyle}>
+                <MaterialIcons name="lock-outline" size={24} color={COLORS.primary} style={styles.icon} />
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Mot de passe</Text>
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    style={styles.input}
+                    placeholder="**********"
+                    placeholderTextColor={COLORS.inactiveText}
+                    onFocus={() => setIsPasswordFocused(true)}
+                    onBlur={() => setIsPasswordFocused(false)}
+                  />
+                </View>
+              </Animated.View>
+            </AnimatedEntry>
+
+            {/* Display login error inline */}
+            {loginError ? <Text style={styles.loginErrorText}>{loginError}</Text> : null}
+
+            <AnimatedEntry index={3}>
+              <View style={styles.footerContainer}>
+                <Text style={styles.footerText}>
+                  Vous n'avez pas de compte ? 
+                  <Pressable onPress={() => router.push('/register')}><Text style={styles.footerLink}> inscrivez-vous.</Text></Pressable>
+                </Text>
+                <Text style={styles.footerText}>
+                  Mot de passe oublié ? cliquez 
+                  <Pressable onPress={() => router.push('/forgot-password')}><Text style={styles.footerLink}> ici.</Text></Pressable>
+                </Text>
+              </View>
+            </AnimatedEntry>
+
+            <AnimatedEntry index={4}>
+              <Pressable onPress={handleLogin} onPressIn={onPressIn} onPressOut={onPressOut} disabled={isLoading}>
+                <Animated.View style={[styles.loginButton, { transform: [{ scale: buttonScale }] }]}>
+                  {isLoading ? <ActivityIndicator size="small" color={COLORS.lightText} /> : <Text style={styles.loginButtonText}>Se connecter</Text>}
+                </Animated.View>
+              </Pressable>
+            </AnimatedEntry>
           </View>
-        </AnimatedEntry>
-
-        <AnimatedEntry index={1}>
-          <Animated.View style={emailContainerStyle}>
-            <Feather name="user" size={24} color={COLORS.primary} style={styles.icon} />
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput value={email} onChangeText={setEmail} style={styles.input} placeholder="nom@exemple.com" placeholderTextColor={COLORS.inactiveText} onFocus={() => setIsEmailFocused(true)} onBlur={() => setIsEmailFocused(false)} />
-            </View>
-          </Animated.View>
-        </AnimatedEntry>
-        
-        <AnimatedEntry index={2}>
-          <Animated.View style={passwordContainerStyle}>
-            <MaterialIcons name="lock-outline" size={24} color={COLORS.primary} style={styles.icon} />
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Mot de passe</Text>
-              <TextInput value={password} onChangeText={setPassword} secureTextEntry style={styles.input} placeholder="**********" placeholderTextColor={COLORS.inactiveText} onFocus={() => setIsPasswordFocused(true)} onBlur={() => setIsPasswordFocused(false)} />
-            </View>
-          </Animated.View>
-        </AnimatedEntry>
-
-        <AnimatedEntry index={3}>
-          <View style={styles.footerContainer}>
-            <Text style={styles.footerText}>Vous n'avez pas de compte ? <Pressable onPress={() => router.push('/register')}><Text style={styles.footerLink}>inscrivez-vous.</Text></Pressable></Text>
-            <Text style={styles.footerText}>Mot de passe oublié ? cliquez <Pressable onPress={() => router.push('/forgot-password')}><Text style={styles.footerLink}>ici.</Text></Pressable></Text>
-          </View>
-        </AnimatedEntry>
-
-        <AnimatedEntry index={4}>
-          <Pressable onPress={handleLogin} onPressIn={onPressIn} onPressOut={onPressOut} disabled={isLoading}>
-            <Animated.View style={[styles.loginButton, { transform: [{ scale: buttonScale }] }]}>
-              {isLoading ? <ActivityIndicator size="small" color={COLORS.lightText} /> : <Text style={styles.loginButtonText}>Se connecter</Text>}
-            </Animated.View>
-          </Pressable>
-        </AnimatedEntry>
-      </View>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
-// --- STYLES (légèrement ajustés pour les animations) ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  backButton: { position: 'absolute', top: 60, left: 20, zIndex: 10 },
+  backgroundContainer: { flex: 1 },
+  container: { flex: 1 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   innerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   headerContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 40, gap: 30 },
   headerText: { fontSize: 22, color: COLORS.inactiveText },
@@ -178,4 +227,5 @@ const styles = StyleSheet.create({
   footerLink: { color: COLORS.primary, fontWeight: 'bold' },
   loginButton: { width: '100%', backgroundColor: COLORS.primary, padding: 15, borderRadius: 30, alignItems: 'center', marginTop: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, justifyContent: 'center', alignItems: 'center' },
   loginButtonText: { color: COLORS.lightText, fontSize: 18, fontWeight: 'bold' },
+  loginErrorText: { color: '#ef4444', fontSize: 14, marginTop: -10, marginBottom: 10, textAlign: 'center' },
 });

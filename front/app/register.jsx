@@ -10,7 +10,8 @@ import {
   Platform,
   Pressable,
   Animated,
-  ActivityIndicator
+  ActivityIndicator,
+  ImageBackground
 } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -19,7 +20,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 const COLORS = {
   primary: '#005A9C',
   background: '#F8F8F8',
-  inputBackground: '#EBF2FA',
+  inputBackground: '#DDE8F5', // <-- THIS IS THE UPDATED COLOR
   lightText: '#FFFFFF',
   darkText: '#333333',
   inactiveText: '#A9A9A9',
@@ -99,7 +100,7 @@ export default function Register() {
     }
     setIsLoading(true);
     try {
-      await axios.post('http://192.168.1.3:5000/api/auth/register', {
+      await axios.post('http://192.168.1.8:5000/api/auth/register', {
         name,
         email,
         password,
@@ -127,160 +128,169 @@ export default function Register() {
   });
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Feather name="arrow-left" size={28} color={COLORS.primary} />
-      </TouchableOpacity>
-      <View style={styles.innerContainer}>
+    <ImageBackground
+      source={require('app/assets/background-shapes.png')}
+      style={styles.backgroundContainer}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Feather name="arrow-left" size={28} color={COLORS.primary} />
+        </TouchableOpacity>
+        <View style={styles.innerContainer}>
 
-        <AnimatedEntry index={0}>
-          <View style={styles.headerContainer}>
-            <TouchableOpacity onPress={() => router.push('/login')}>
-              <Text style={styles.headerText}>Se connecter</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={[styles.headerText, styles.activeHeaderText]}>S'inscrire</Text>
-            </TouchableOpacity>
-          </View>
-        </AnimatedEntry>
-
-        <AnimatedEntry index={1}>
-          <Animated.View style={createAnimatedInputStyle('name')}>
-            <Feather name="user" size={24} color={COLORS.primary} style={styles.icon} />
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Nom</Text>
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-                style={styles.input}
-                placeholder="Votre nom complet"
-                placeholderTextColor={COLORS.inactiveText}
-                onFocus={() => setFocusState(s => ({ ...s, name: true }))}
-                onBlur={() => setFocusState(s => ({ ...s, name: false }))}
-              />
-            </View>
-          </Animated.View>
-        </AnimatedEntry>
-
-        <AnimatedEntry index={2}>
-          <Animated.View style={createAnimatedInputStyle('email')}>
-            <MaterialCommunityIcons name="email-outline" size={24} color={COLORS.primary} style={styles.icon} />
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                style={styles.input}
-                placeholder="nom@exemple.com"
-                placeholderTextColor={COLORS.inactiveText}
-                onFocus={() => setFocusState(s => ({ ...s, email: true }))}
-                onBlur={() => setFocusState(s => ({ ...s, email: false }))}
-              />
-            </View>
-          </Animated.View>
-        </AnimatedEntry>
-
-        <AnimatedEntry index={3}>
-          <Animated.View style={createAnimatedInputStyle('password')}>
-            <MaterialCommunityIcons name="lock-outline" size={24} color={COLORS.primary} style={styles.icon} />
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Mot de passe</Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                style={styles.input}
-                placeholder="**********"
-                placeholderTextColor={COLORS.inactiveText}
-                onFocus={() => setFocusState(s => ({ ...s, password: true }))}
-                onBlur={() => setFocusState(s => ({ ...s, password: false }))}
-              />
-            </View>
-          </Animated.View>
-        </AnimatedEntry>
-
-        <AnimatedEntry index={4}>
-          <Animated.View style={createAnimatedInputStyle('phone')}>
-            <Feather name="phone" size={24} color={COLORS.primary} style={styles.icon} />
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Téléphone</Text>
-              <TextInput
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                style={styles.input}
-                placeholder="+33 6 12 34 56 78"
-                placeholderTextColor={COLORS.inactiveText}
-                onFocus={() => setFocusState(s => ({ ...s, phone: true }))}
-                onBlur={() => setFocusState(s => ({ ...s, phone: false }))}
-              />
-            </View>
-          </Animated.View>
-        </AnimatedEntry>
-
-        {/* Role selector */}
-        <AnimatedEntry index={5}>
-          <>
-            <Text style={styles.roleLabel}>Je suis un :</Text>
-            <View style={styles.roleSelectorContainer}>
-              <TouchableOpacity style={[styles.roleButton, role === 'client' && styles.activeRoleButton]} onPress={() => setRole('client')}>
-                <Text style={[styles.roleButtonText, role === 'client' && styles.activeRoleButtonText]}>Client</Text>
+          <AnimatedEntry index={0}>
+            <View style={styles.headerContainer}>
+              <TouchableOpacity onPress={() => router.push('/login')}>
+                <Text style={styles.headerText}>Se connecter</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.roleButton, role === 'technicien' && styles.activeRoleButton]} onPress={() => setRole('technicien')}>
-                <Text style={[styles.roleButtonText, role === 'technicien' && styles.activeRoleButtonText]}>Technicien</Text>
+              <TouchableOpacity>
+                <Text style={[styles.headerText, styles.activeHeaderText]}>S'inscrire</Text>
               </TouchableOpacity>
             </View>
-          </>
-        </AnimatedEntry>
+          </AnimatedEntry>
 
-        {/* Profession input shown only if role is technician */}
-        {role === 'technicien' && (
-          <AnimatedEntry index={6}>
-            <Animated.View style={createAnimatedInputStyle('profession')}>
-              <MaterialCommunityIcons name="briefcase-outline" size={24} color={COLORS.primary} style={styles.icon} />
+          <AnimatedEntry index={1}>
+            <Animated.View style={createAnimatedInputStyle('name')}>
+              <Feather name="user" size={24} color={COLORS.primary} style={styles.icon} />
               <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>Profession</Text>
+                <Text style={styles.inputLabel}>Nom</Text>
                 <TextInput
-                  value={profession}
-                  onChangeText={setProfession}
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
                   style={styles.input}
-                  placeholder="Ex : Plomberie, Électricité"
+                  placeholder="Votre nom complet"
                   placeholderTextColor={COLORS.inactiveText}
-                  onFocus={() => setFocusState(s => ({ ...s, profession: true }))}
-                  onBlur={() => setFocusState(s => ({ ...s, profession: false }))}
+                  onFocus={() => setFocusState(s => ({ ...s, name: true }))}
+                  onBlur={() => setFocusState(s => ({ ...s, name: false }))}
                 />
               </View>
             </Animated.View>
           </AnimatedEntry>
-        )}
 
-        <AnimatedEntry index={7}>
-          <View style={styles.footerContainer}>
-            <Text style={styles.footerText}>
-              Vous avez déjà un compte ?{' '}
-              <Pressable onPress={() => router.push('/login')}>
-                <Text style={styles.footerLink}>connectez-vous.</Text>
-              </Pressable>
-            </Text>
-          </View>
-        </AnimatedEntry>
-
-        <AnimatedEntry index={8}>
-          <Pressable onPress={handleRegister} onPressIn={onPressIn} onPressOut={onPressOut} disabled={isLoading}>
-            <Animated.View style={[styles.registerButton, { transform: [{ scale: buttonScale }] }]}>
-              {isLoading ? <ActivityIndicator size="small" color={COLORS.lightText} /> : <Text style={styles.registerButtonText}>S'inscrire</Text>}
+          <AnimatedEntry index={2}>
+            <Animated.View style={createAnimatedInputStyle('email')}>
+              <MaterialCommunityIcons name="email-outline" size={24} color={COLORS.primary} style={styles.icon} />
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Email</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  style={styles.input}
+                  placeholder="nom@exemple.com"
+                  placeholderTextColor={COLORS.inactiveText}
+                  onFocus={() => setFocusState(s => ({ ...s, email: true }))}
+                  onBlur={() => setFocusState(s => ({ ...s, email: false }))}
+                />
+              </View>
             </Animated.View>
-          </Pressable>
-        </AnimatedEntry>
-      </View>
-    </KeyboardAvoidingView>
+          </AnimatedEntry>
+
+          <AnimatedEntry index={3}>
+            <Animated.View style={createAnimatedInputStyle('password')}>
+              <MaterialCommunityIcons name="lock-outline" size={24} color={COLORS.primary} style={styles.icon} />
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Mot de passe</Text>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  style={styles.input}
+                  placeholder="**********"
+                  placeholderTextColor={COLORS.inactiveText}
+                  onFocus={() => setFocusState(s => ({ ...s, password: true }))}
+                  onBlur={() => setFocusState(s => ({ ...s, password: false }))}
+                />
+              </View>
+            </Animated.View>
+          </AnimatedEntry>
+
+          <AnimatedEntry index={4}>
+            <Animated.View style={createAnimatedInputStyle('phone')}>
+              <Feather name="phone" size={24} color={COLORS.primary} style={styles.icon} />
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Téléphone</Text>
+                <TextInput
+                  value={phone}
+                  onChangeText={setPhone}
+                  keyboardType="phone-pad"
+                  style={styles.input}
+                  placeholder="+33 6 12 34 56 78"
+                  placeholderTextColor={COLORS.inactiveText}
+                  onFocus={() => setFocusState(s => ({ ...s, phone: true }))}
+                  onBlur={() => setFocusState(s => ({ ...s, phone: false }))}
+                />
+              </View>
+            </Animated.View>
+          </AnimatedEntry>
+
+          <AnimatedEntry index={5}>
+            <>
+              <Text style={styles.roleLabel}>Je suis un :</Text>
+              <View style={styles.roleSelectorContainer}>
+                <TouchableOpacity style={[styles.roleButton, role === 'client' && styles.activeRoleButton]} onPress={() => setRole('client')}>
+                  <Text style={[styles.roleButtonText, role === 'client' && styles.activeRoleButtonText]}>Client</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.roleButton, role === 'technicien' && styles.activeRoleButton]} onPress={() => setRole('technicien')}>
+                  <Text style={[styles.roleButtonText, role === 'technicien' && styles.activeRoleButtonText]}>Technicien</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          </AnimatedEntry>
+
+          {role === 'technicien' && (
+            <AnimatedEntry index={6}>
+              <Animated.View style={createAnimatedInputStyle('profession')}>
+                <MaterialCommunityIcons name="briefcase-outline" size={24} color={COLORS.primary} style={styles.icon} />
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Profession</Text>
+                  <TextInput
+                    value={profession}
+                    onChangeText={setProfession}
+                    style={styles.input}
+                    placeholder="Ex : Plomberie, Électricité"
+                    placeholderTextColor={COLORS.inactiveText}
+                    onFocus={() => setFocusState(s => ({ ...s, profession: true }))}
+                    onBlur={() => setFocusState(s => ({ ...s, profession: false }))}
+                  />
+                </View>
+              </Animated.View>
+            </AnimatedEntry>
+          )}
+
+          <AnimatedEntry index={7}>
+            <View style={styles.footerContainer}>
+              <Text style={styles.footerText}>
+                Vous avez déjà un compte ?{' '}
+                <Pressable onPress={() => router.push('/login')}>
+                  <Text style={styles.footerLink}>connectez-vous.</Text>
+                </Pressable>
+              </Text>
+            </View>
+          </AnimatedEntry>
+
+          <AnimatedEntry index={8}>
+            <Pressable onPress={handleRegister} onPressIn={onPressIn} onPressOut={onPressOut} disabled={isLoading}>
+              <Animated.View style={[styles.registerButton, { transform: [{ scale: buttonScale }] }]}>
+                {isLoading ? <ActivityIndicator size="small" color={COLORS.lightText} /> : <Text style={styles.registerButtonText}>S'inscrire</Text>}
+              </Animated.View>
+            </Pressable>
+          </AnimatedEntry>
+        </View>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  backgroundContainer: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+  },
   backButton: { position: 'absolute', top: 60, left: 20, zIndex: 10 },
   innerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   headerContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 25, gap: 30 },
@@ -347,4 +357,3 @@ const styles = StyleSheet.create({
   },
   registerButtonText: { color: COLORS.lightText, fontSize: 18, fontWeight: 'bold' },
 });
-

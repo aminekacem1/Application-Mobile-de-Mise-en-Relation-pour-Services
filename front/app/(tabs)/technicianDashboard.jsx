@@ -1,3 +1,4 @@
+// front/app/(tabs)/technicianDashboard.jsx (Dashboard content - Image 4)
 import React, { useState } from 'react';
 import {
   View,
@@ -11,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -25,8 +26,8 @@ const COLORS = {
   darkGray: '#CBD5E0',
   red: '#E53E3E',
   green: '#38A169',
-  lightBlue: '#63B3ED',
-  separator: '#4A5568',
+  lightBlue: '#63B3ED', // For active tab or button
+  separator: '#4A5568', // For dividers
 };
 
 // --- Static Data (for UI demonstration) ---
@@ -43,42 +44,10 @@ const overviewStats = [
   { label: 'Emplois ce mois-ci', value: '0', color: COLORS.lightBlue },
 ];
 
-// --- Technician's Bottom Navigation Bar (FIXED "Statistique" button) ---
-const TechnicianBottomNavBar = () => {
-    const router = useRouter();
-    return (
-        <View style={styles.technicianNavBarContainer}>
-            {/* Emplois - Assuming it works as intended or is inactive for now */}
-            <TouchableOpacity style={styles.technicianNavBarButton} onPress={() => { /* Your Emplois logic here */ }}>
-                <Icon name="briefcase" solid size={22} color={COLORS.gray} />
-                <Text style={styles.technicianNavBarText}>Emplois</Text>
-            </TouchableOpacity>
-
-            {/* Messages - Assuming it works as intended or is inactive for now */}
-            <TouchableOpacity style={styles.technicianNavBarButton} onPress={() => { /* Your Messages logic here */ }}>
-                <Icon name="comments" solid size={22} color={COLORS.gray} />
-                <Text style={styles.technicianNavBarText}>Messages</Text>
-            </TouchableOpacity>
-
-            {/* Statistique - NOW NAVIGATES TO TECHNICIANDASHBOARD */}
-            <TouchableOpacity style={styles.technicianNavBarButton} onPress={() => router.push('/technicianDashboard')}>
-                <Icon name="chart-bar" solid size={22} color={COLORS.lightBlue} /> {/* Highlight if currently on dashboard */}
-                <Text style={[styles.technicianNavBarText, { color: COLORS.lightBlue }]}>Statistique</Text>
-            </TouchableOpacity>
-            
-            {/* Profil - Assuming it works as intended or navigates to TechnicianDashboard */}
-            <TouchableOpacity style={styles.technicianNavBarButton} onPress={() => router.push('/technicianDashboard')}>
-                <Icon name="user-circle" solid size={22} color={COLORS.lightBlue} /> {/* Highlight active tab */}
-                <Text style={[styles.technicianNavBarText, { color: COLORS.lightBlue }]}>Profil</Text>
-            </TouchableOpacity>
-        </View>
-    );
-};
-
 export default function TechnicianDashboard() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const [activeEarningsTab, setActiveEarningsTab] = useState('Mois');
+  const insets = useSafeAreaInsets(); // For precise safe area control
+  const [activeEarningsTab, setActiveEarningsTab] = useState('Mois'); // 'Semaine', 'Mois', 'Année'
 
   const handleLogout = () => {
     Alert.alert(
@@ -86,13 +55,14 @@ export default function TechnicianDashboard() {
       "Êtes-vous sûr de vouloir vous déconnecter ?",
       [
         { text: "Annuler", style: "cancel" },
-        { text: "Oui", onPress: () => router.replace('/login') }
+        { text: "Oui", onPress: () => router.replace('/login') } // Navigate to login on logout
       ]
     );
   };
 
   const handleModifyProfile = () => {
-    Alert.alert("Modifier le profil", "La fonctionnalité de modification de profil est en cours de développement.");
+    // Navigates to the separate profile editing page
+    router.push('/profile'); // Assuming 'profile.jsx' is your edit profile page
   };
 
   const handleLanguageChange = (lang) => {
@@ -100,10 +70,13 @@ export default function TechnicianDashboard() {
   };
 
   return (
-    <View style={[styles.fullScreenWrapper]}>
+    // fullScreenWrapper now explicitly takes paddingTop for header.
+    // The bottom padding for scroll content is adjusted for the tab bar.
+    <View style={[styles.fullScreenWrapper, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.brandBlue} />
 
-      <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
+      {/* Header */}
+      <View style={styles.headerContainer}>
         <View style={styles.headerLeft}>
           <Text style={styles.appTitle}>Service App</Text>
         </View>
@@ -113,11 +86,13 @@ export default function TechnicianDashboard() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 80 }]}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileHeader}>
+            {/* Language Selector Placeholder */}
             <TouchableOpacity onPress={() => handleLanguageChange('Français')} style={styles.languageSelector}>
-              <Icon name="flag-fr" size={16} color={COLORS.darkGray} />
+              <Icon name="flag-fr" size={16} color={COLORS.darkGray} /> {/* Assuming flag-fr icon exists */}
               <Text style={styles.languageText}> Français</Text>
               <Icon name="chevron-down" size={10} color={COLORS.darkGray} style={{ marginLeft: 5 }} />
             </TouchableOpacity>
@@ -125,16 +100,17 @@ export default function TechnicianDashboard() {
             <Text style={styles.profilePhone}>27132442</Text>
           </View>
 
+          {/* Service Tags */}
           <View style={styles.tagsContainer}>
             {serviceTags.map((tag, index) => (
               <View key={index} style={styles.tag}>
-                <Icon name={tag.toLowerCase().includes('electricite') ? 'bolt' :
+                <Icon name={tag.toLowerCase().includes('electricite') ? 'bolt' : // Example icon logic
                             tag.toLowerCase().includes('mecanique') ? 'cogs' :
                             tag.toLowerCase().includes('plomberie') ? 'faucet' :
                             tag.toLowerCase().includes('jardinage') ? 'seedling' :
                             tag.toLowerCase().includes('nettoyage') ? 'broom' :
                             tag.toLowerCase().includes('peinture') ? 'paint-roller' :
-                            'wrench'}
+                            'wrench'} // Default icon
                       size={14} color={COLORS.darkGray} style={{ marginRight: 5 }} />
                 <Text style={styles.tagText}>{tag}</Text>
               </View>
@@ -147,6 +123,7 @@ export default function TechnicianDashboard() {
           </TouchableOpacity>
         </View>
 
+        {/* Aperçu (Overview) Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Aperçu</Text>
         </View>
@@ -159,6 +136,7 @@ export default function TechnicianDashboard() {
           ))}
         </View>
 
+        {/* Gains (Earnings) Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Gains</Text>
           <View style={styles.earningsTag}>
@@ -182,6 +160,7 @@ export default function TechnicianDashboard() {
             ))}
           </View>
 
+          {/* Placeholder for the graph */}
           <View style={styles.graphPlaceholder}>
             <Text style={styles.graphPlaceholderText}>Graphique des gains ici</Text>
             <View style={styles.graphLine}></View>
@@ -194,15 +173,14 @@ export default function TechnicianDashboard() {
           </View>
         </View>
 
+        {/* Déconnexion Button */}
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Icon name="sign-out-alt" size={18} color={COLORS.white} style={{ marginRight: 10 }} />
           <Text style={styles.logoutButtonText}>Déconnexion</Text>
         </TouchableOpacity>
       </ScrollView>
 
-      <View style={[styles.technicianNavBarWrapper, { paddingBottom: insets.bottom }]}>
-        <TechnicianBottomNavBar />
-      </View>
+      {/* NO TechnicianBottomNavBar HERE, it's provided by (tabs)/_layout.jsx */}
     </View>
   );
 }
@@ -210,7 +188,7 @@ export default function TechnicianDashboard() {
 const styles = StyleSheet.create({
   fullScreenWrapper: {
     flex: 1,
-    backgroundColor: COLORS.darkBackground,
+    backgroundColor: COLORS.darkBackground, // Overall dark background
   },
   headerContainer: {
     flexDirection: 'row',
@@ -242,12 +220,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: COLORS.lightGray, // Placeholder color
   },
   scrollContent: {
     paddingHorizontal: 20,
     paddingVertical: 20,
-    // paddingBottom adjusted dynamically in component
+    paddingBottom: 20, // Default padding, (tabs)/_layout.jsx will handle bottom inset for the tab bar
   },
   profileSection: {
     backgroundColor: COLORS.cardBackground,
@@ -289,7 +267,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     marginBottom: 20,
-    gap: 8,
+    gap: 8, // Spacing between tags
   },
   tag: {
     flexDirection: 'row',
@@ -337,8 +315,8 @@ const styles = StyleSheet.create({
   overviewCard: {
     backgroundColor: COLORS.cardBackground,
     borderRadius: 15,
-    width: (width - 60) / 2,
-    aspectRatio: 1.1,
+    width: (width - 60) / 2, // (screen_width - paddingHorizontal * 2 - gap) / 2
+    aspectRatio: 1.1, // Slightly taller than wide
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
@@ -366,7 +344,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   earningsCard: {
-    backgroundColor: COLORS.brandBlue,
+    backgroundColor: COLORS.brandBlue, // Blue background for earnings section
     borderRadius: 15,
     padding: 20,
     marginBottom: 20,
@@ -402,7 +380,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   earningsTabButtonActive: {
-    backgroundColor: COLORS.brandBlue,
+    backgroundColor: COLORS.brandBlue, // Active tab color
   },
   earningsTabButtonText: {
     color: COLORS.darkGray,
@@ -412,13 +390,13 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   graphPlaceholder: {
-    height: 150,
-    backgroundColor: COLORS.darkBackground,
+    height: 150, // Height for the graph area
+    backgroundColor: COLORS.darkBackground, // Darker background for graph
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    paddingBottom: 20,
+    paddingBottom: 20, // Space for markers
   },
   graphPlaceholderText: {
     color: COLORS.gray,
@@ -454,36 +432,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 20, // Ensure space at the bottom
   },
   logoutButtonText: {
     color: COLORS.white,
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  
-  technicianNavBarWrapper: {
-    backgroundColor: COLORS.brandBlue,
-  },
-  technicianNavBarContainer: {
-    flexDirection: 'row',
-    height: 60,
-    backgroundColor: COLORS.brandBlue,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.separator,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  technicianNavBarButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 5,
-  },
-  technicianNavBarText: {
-    color: COLORS.gray,
-    fontWeight: '500',
-    fontSize: 12,
-    marginTop: 4,
   },
 });

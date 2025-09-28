@@ -38,22 +38,7 @@ const InfoField = ({ label, value }) => (
 // Barre de navigation du bas
 const BottomNavBar = () => {
     const router = useRouter();
-    return (
-        <View style={styles.navBarContainer}>
-        <TouchableOpacity style={styles.navBarButton} onPress={() => router.push('/bookings')}>
-            <Icon name="bookmark" solid size={22} color={COLORS.gray} />
-            <Text style={styles.navBarText}>Réservations</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navBarButton} onPress={() => router.push('/chat')}>
-            <Icon name="comments" solid size={22} color={COLORS.gray} />
-            <Text style={styles.navBarText}>Chat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navBarButton} onPress={() => router.push('/profile')}>
-            <Icon name="user-circle" solid size={22} color={COLORS.gray} />
-            <Text style={styles.navBarText}>Profil</Text>
-        </TouchableOpacity>
-        </View>
-    );
+    
 };
 
 

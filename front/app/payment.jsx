@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, StatusBar, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, ScrollView, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // --- Palette de Couleurs ---
 const COULEURS = {
   brandBlue: '#0D47A1',
   white: '#FFFFFF',
-  lightBg: '#F0F0F0', // Fond général de la page
-  cardBg: '#EAE6E1',    // Fond de la carte de paiement
+  lightBg: '#F0F0F0',
+  cardBg: '#EAE6E1',
   darkGray: '#3A3A3A',
   gray: '#6C757D',
   orange: '#F39C12',
@@ -18,96 +19,133 @@ const COULEURS = {
 // --- Options de Paiement ---
 const paymentOptions = ['Stripe', 'PayPal', 'Argent Mobile'];
 
-// --- Barre de Navigation du Bas ---
-const BarreDeNavigation = () => {
-    const router = useRouter();
-    return (
-        <View style={styles.navBarContainer}>
-            <TouchableOpacity style={styles.navBarButton} onPress={() => router.push('/bookings')}><Icon name="bookmark" solid size={22} color={COULEURS.gray} /><Text style={styles.navBarText}>Réservations</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.navBarButton} onPress={() => router.push('/serviceTracking')}><Icon name="clipboard-check" solid size={22} color={COULEURS.gray} /><Text style={styles.navBarText}>Suivi</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.navBarButton} onPress={() => router.push('/chatList')}><Icon name="comments" solid size={22} color={COULEURS.gray} /><Text style={styles.navBarText}>Chat</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.navBarButton} onPress={() => router.push('/profile')}><Icon name="user-circle" solid size={22} color={COULEURS.gray} /><Text style={styles.navBarText}>Profil</Text></TouchableOpacity>
-        </View>
-    );
-};
-
 // --- Composant Principal de la Page de Paiement ---
 export default function PaymentPage() {
   const router = useRouter();
   const serviceDetails = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
 
   const [selectedMethod, setSelectedMethod] = useState('Stripe');
   const [escrow, setEscrow] = useState(false);
 
   const handlePayment = () => {
-      Alert.alert(
-          "Paiement Confirmé",
-          `Le paiement de ${serviceDetails.amount} € pour le service "${serviceDetails.service}" a été effectué avec succès via ${selectedMethod}.`,
-          [{ text: "OK", onPress: () => router.push('/userPage') }]
-      );
+    Alert.alert(
+      "Paiement Confirmé",
+      `Le paiement de ${parseFloat(serviceDetails.amount).toFixed(2)} € pour le service "${serviceDetails.service}" a été effectué avec succès via ${selectedMethod}.`,
+      [{ text: "OK", onPress: () => router.push('/userPage') }]
+    );
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.fullScreenWrapper}>
       <StatusBar barStyle="light-content" backgroundColor={COULEURS.brandBlue} />
       
-      <View style={styles.headerContainer}>
-        {}
-        {}
+      {/* Header */}
+      <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => router.push('/serviceTracking')} style={styles.backButton}>
           <Icon name="arrow-left" size={20} color={COULEURS.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Paiement</Text>
-        <View style={{ width: 40 }} />
+        <View style={styles.backButtonSpacer} />
       </View>
 
       <View style={styles.pageContainer}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-            <View style={styles.paymentCard}>
-                <Text style={styles.sectionTitle}>Méthode de Paiement</Text>
-                {paymentOptions.map(option => (
-                    <TouchableOpacity key={option} style={styles.radioContainer} onPress={() => setSelectedMethod(option)}>
-                        <View style={styles.radioOuter}>
-                            {selectedMethod === option && <View style={styles.radioInner} />}
-                        </View>
-                        <Text style={styles.radioLabel}>{option}</Text>
-                    </TouchableOpacity>
-                ))}
-
-                <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Paiement Séquestre <Text style={{fontWeight: 'normal', color: COULEURS.gray}}>(Bloqué jusqu'à la fin du service)</Text></Text>
-                <TouchableOpacity style={styles.radioContainer} onPress={() => setEscrow(!escrow)}>
-                    <View style={styles.checkbox}>
-                        {escrow && <Icon name="check" size={12} color={COULEURS.brandBlue} />}
-                    </View>
-                </TouchableOpacity>
-
-                <Text style={styles.totalText}>Total : {parseFloat(serviceDetails.amount).toFixed(2)} €</Text>
-
-                <View style={styles.actionButtonContainer}>
-                    <TouchableOpacity onPress={() => Alert.alert("Facture", "La fonctionnalité de téléchargement est en cours de développement.")}>
-                        <Text style={styles.buttonText}>Télécharger la facture</Text>
-                    </TouchableOpacity>
-                    <View style={styles.divider} />
-                    <TouchableOpacity onPress={handlePayment}>
-                        <Text style={styles.buttonText}>Payer Maintenant</Text>
-                    </TouchableOpacity>
+          <View style={styles.paymentCard}>
+            <Text style={styles.sectionTitle}>Méthode de Paiement</Text>
+            
+            {paymentOptions.map(option => (
+              <TouchableOpacity 
+                key={option} 
+                style={styles.radioContainer} 
+                onPress={() => setSelectedMethod(option)}
+              >
+                <View style={styles.radioOuter}>
+                  {selectedMethod === option && <View style={styles.radioInner} />}
                 </View>
+                <Text style={styles.radioLabel}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+
+            <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
+              Paiement Séquestre{' '}
+              <Text style={{ fontWeight: 'normal', color: COULEURS.gray }}>
+                (Bloqué jusqu'à la fin du service)
+              </Text>
+            </Text>
+
+            <TouchableOpacity style={styles.radioContainer} onPress={() => setEscrow(!escrow)}>
+              <View style={styles.checkbox}>
+                {escrow && <Icon name="check" size={12} color={COULEURS.brandBlue} />}
+              </View>
+              <Text style={styles.radioLabel}>Activer le séquestre</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.totalText}>
+              Total : {parseFloat(serviceDetails.amount).toFixed(2)} €
+            </Text>
+
+            <View style={styles.actionButtonContainer}>
+              <TouchableOpacity 
+                onPress={() => Alert.alert("Facture", "La fonctionnalité de téléchargement est en cours de développement.")}
+              >
+                <Text style={styles.buttonText}>Télécharger la facture</Text>
+              </TouchableOpacity>
+
+              <View style={styles.divider} />
+
+              <TouchableOpacity onPress={handlePayment}>
+                <Text style={styles.buttonText}>Payer Maintenant</Text>
+              </TouchableOpacity>
             </View>
+          </View>
         </ScrollView>
-        <BarreDeNavigation />
       </View>
-    </SafeAreaView>
+
+      {/* Spacer for bottom safe area */}
+      <View style={{ backgroundColor: COULEURS.white, paddingBottom: insets.bottom }} />
+    </View>
   );
 }
 
 // --- Feuille de Styles ---
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COULEURS.brandBlue },
-  pageContainer: { flex: 1, backgroundColor: COULEURS.lightBg },
-  headerContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COULEURS.brandBlue, paddingVertical: 15, paddingHorizontal: 15 },
-  headerTitle: { color: COULEURS.white, fontSize: 22, fontWeight: 'bold' },
-  backButton: { padding: 5 },
-  scrollContent: { padding: 20 },
+  fullScreenWrapper: { 
+    flex: 1, 
+    backgroundColor: COULEURS.lightBg,
+  },
+  pageContainer: { 
+    flex: 1, 
+    backgroundColor: COULEURS.lightBg,
+  },
+  headerContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    backgroundColor: COULEURS.brandBlue, 
+    paddingVertical: 15, 
+    paddingHorizontal: 15,
+  },
+  headerTitle: { 
+    color: COULEURS.white, 
+    fontSize: 22, 
+    fontWeight: 'bold',
+    textAlign: 'center', 
+  },
+  backButton: { 
+    padding: 5,
+    width: 40,
+    height: 40, 
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButtonSpacer: { 
+    width: 40, 
+    height: 40,
+  },
+  scrollContent: { 
+    padding: 20 
+  },
   paymentCard: {
     backgroundColor: COULEURS.cardBg,
     borderRadius: 12,
@@ -152,6 +190,7 @@ const styles = StyleSheet.create({
     backgroundColor: COULEURS.white,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 10, 
   },
   totalText: {
     fontSize: 18,
@@ -177,7 +216,4 @@ const styles = StyleSheet.create({
     backgroundColor: COULEURS.white,
     marginVertical: 10,
   },
-  navBarContainer: { flexDirection: 'row', height: 60, backgroundColor: COULEURS.white, borderTopWidth: 1, borderTopColor: COULEURS.lightGray },
-  navBarButton: {  flex: 1,  alignItems: 'center', justifyContent: 'center' },
-  navBarText: {  color: COULEURS.gray,  fontWeight: '500', fontSize: 12, marginTop: 4 },
 });
